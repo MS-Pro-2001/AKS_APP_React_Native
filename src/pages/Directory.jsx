@@ -69,7 +69,9 @@ const styles = StyleSheet.create({
 
 
 const Directory = (props) => {
-    const ward_name = props.route.params?.userWard
+    const ward_name = props?.route?.params?.userWard
+
+
 
     const [searchedQuery, setSearchedQuery] = useState("")
     const [loading, setLoading] = useState(false)
@@ -77,9 +79,26 @@ const Directory = (props) => {
 
 
     useEffect(() => {
+        (async () => {
 
+            await fetch("http://192.168.0.103:5000/api/user/fetchallusers", {
+                method: 'GET'
+            }).then(async (res) => {
+                const aksComitteeData = await res.json();
+                setUserData(aksComitteeData)
+
+            }).catch((error => {
+                console.log(error)
+
+            }))
+
+        })()
 
     }, [])
+
+    const directoryFilteredData = userData?.filter((item) => {
+        return item?.ward.toLowerCase() === ward_name.toLowerCase()
+    })
 
 
 
@@ -100,7 +119,7 @@ const Directory = (props) => {
 
 
                 <Text>
-                    Total entries: {userData?.filter((item) => (item.firstName.toLowerCase().includes(searchedQuery.toLowerCase()))).length}
+                    Total entries: {directoryFilteredData?.filter((item) => (item?.fullName?.toLowerCase().includes(searchedQuery.toLowerCase()))).length}
                 </Text>
                 <Text style={styles.border}></Text>
 
@@ -111,11 +130,11 @@ const Directory = (props) => {
                 <ActivityIndicator size={'large'} style={{ display: `${loading ? '' : 'none'}` }} />
                 <SafeAreaView style={styles.container} >
                     <FlatList
-                        data={userData?.filter((item) => (item.firstName.toLowerCase().includes(searchedQuery.toLowerCase())))}
+                        data={directoryFilteredData?.filter((item) => (item?.fullName?.toLowerCase().includes(searchedQuery.toLowerCase())))}
                         renderItem={({ item }) => {
                             return (
                                 <TouchableRipple
-                                    onPress={() => console.log('pressed')}
+                                    onPress={() => props.navigation.push("UserDetailPage", { user_id: item?._id })}
                                     rippleColor="rgba(0, 0, 0, .32)"
                                     key={item?.id}
                                 >
@@ -123,8 +142,8 @@ const Directory = (props) => {
                                         <View style={styles.listItem} >
                                             {/* <Text style={styles.photo} ></Text> */}
                                             <View >
-                                                <Text style={styles.name} >{item?.firstName}</Text>
-                                                <Text style={{ color: 'black' }} >{item?.designation}</Text>
+                                                <Text style={styles.name} >{item?.fullName}</Text>
+                                                {/* <Text style={{ color: 'black' }} >{item?.designation}</Text> */}
 
                                             </View>
                                         </View>
@@ -138,7 +157,7 @@ const Directory = (props) => {
 
 
 
-                        keyExtractor={item => item.id}
+                        keyExtractor={item => item?._id}
                     />
 
                 </SafeAreaView>

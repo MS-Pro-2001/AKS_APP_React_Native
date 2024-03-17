@@ -178,7 +178,7 @@ const OtpLoginPage = ({ navigation }) => {
                 <Button disabled={phoneNumber.length !== 10 ? true : false} mode='contained' loading={isLoading} color='#213190' onPress={() => sendOtp()}  >Send Otp</Button>
                 <View style={{ alignItems: 'flex-end', margin: 10 }}>
 
-                    <Text style={{ fontSize: 15 }} onPress={() => console.log("Signup")} ><Text style={{ color: 'black' }} > New User? </Text> Register </Text>
+                    <Text style={{ fontSize: 15 }} onPress={() => navigation.push('SignUpPage')} ><Text style={{ color: 'black' }} > New User? </Text> Register </Text>
                 </View>
             </View>
             }

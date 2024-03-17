@@ -27,6 +27,8 @@ import UserDetailPage from './src/pages/UserDetailPage';
 // import CustomDialog from './src/components/CustomDialog';
 
 import { UserContext } from './src/ContextApi/ContextApi';
+import UserLocationMap from './src/components/UserLocationMap';
+import SignUpPage from './src/pages/SignUpPage';
 
 
 const Drawer = createDrawerNavigator();
@@ -38,7 +40,7 @@ function MyDrawer() {
   return (
     <Drawer.Navigator>
       <Drawer.Screen name="Home" options={{ headerShown: true }} component={TabsNavigator} />
-      {/* <Drawer.Screen name="User Details" component={UserDetailPage} /> */}
+      <Drawer.Screen name="UserDetailPage" component={UserDetailPage} />
       {/* <Drawer.Screen name="Update Details" component={UpdateUserDetails} /> */}
 
       {/* <Drawer.Screen options={{ headerShown: false, }} name="LogoutPage" component={LogOutPage} /> */}
@@ -117,6 +119,8 @@ function WardTabsNavigator({ route }) {
 
 
 
+
+
     </Tab.Navigator>
   )
 }
@@ -130,14 +134,24 @@ function StackNavigatorTab() {
 
     <UserContext.Provider value={{ isUserLoggedIn, setIsUserLoggedIn }}>
       <Stack.Navigator>
-
-
         {!isUserLoggedIn && <Stack.Screen options={{ headerShown: false }} name="Login" component={OtpLoginPage} />}
+        <Stack.Screen name="SignUpPage" options={{
+          headerShown: false
+        }} component={SignUpPage} />
+
+
+
         {isUserLoggedIn &&
           <>
             <Stack.Screen options={{ headerShown: false }} name="HomePage" component={MyDrawer} />
             <Stack.Screen options={{ headerShown: true, title: '' }} name="WardPage" component={Wards} />
             <Stack.Screen options={{ headerShown: true, title: 'Ward' }} name="WardTabsNavigator" component={WardTabsNavigator} />
+            <Stack.Screen name="UserDetailPage" component={UserDetailPage} />
+
+
+
+            {/* <Stack.Screen options={{ headerShown: true, title: 'Ward' }} name="userDetailPage" component={UserDetailPage} /> */}
+
           </>
         }
         {/* <Stack.Screen options={{ headerShown: true, title: 'Home' }} name="HomePage" component={TabsNavigator} /> */}

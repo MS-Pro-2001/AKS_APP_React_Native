@@ -8,7 +8,6 @@ const styles = StyleSheet.create({
         flex: 1,
         justifyContent: 'center',
 
-
     },
     headingContainer: {
         alignItems: 'center'
@@ -45,9 +44,6 @@ const styles = StyleSheet.create({
 })
 
 const SignInPage = ({ navigation }) => {
-
-
-
 
 
 

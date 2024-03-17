@@ -88,6 +88,8 @@ const wards = [
 
 const Wards = ({ navigation }) => {
 
+    // console.log(navigation);
+
     const [searchedQuery, setSearchedQuery] = useState("")
     const [loading, setLoading] = useState(false)
     const [userData, setUserData] = useState([])
