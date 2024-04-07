@@ -1,219 +1,355 @@
-import { View, Text, StyleSheet, Image } from 'react-native'
-import React, { useEffect, useState } from 'react'
-import { Button, HelperText, TextInput, TextInputMask } from 'react-native-paper';
-import DatePicker from 'react-native-date-picker';
-import PhoneInput from 'react-native-phone-number-input';
-import CustomPhoneInput from '../components/CustomPhoneInput';
-
+import {
+  View,
+  Text,
+  StyleSheet,
+  Image,
+  SafeAreaView,
+  ScrollView,
+} from "react-native";
+import React, { useEffect, useState } from "react";
+import {
+  Button,
+  HelperText,
+  TextInput,
+  TextInputMask,
+} from "react-native-paper";
+import DatePicker from "react-native-date-picker";
+import PhoneInput from "react-native-phone-number-input";
+import CustomPhoneInput from "../components/CustomPhoneInput";
+import { Controller, useForm } from "react-hook-form";
+import { ActivityIndicator } from "react-native-paper";
+import { useFocusEffect } from "@react-navigation/native";
 
 const styles = StyleSheet.create({
-    box: {
-        flex: 1,
-        justifyContent: 'center',
+  box: {
+    flex: 1,
+    justifyContent: "center",
+  },
+  headingContainer: {
+    // marginTop: -100,
+    alignItems: "center",
+  },
+  heading: {
+    marginTop: 5,
+    marginBottom: 5,
+    color: "#213190",
+    fontSize: 25,
+  },
+  container: {
+    margin: 10,
+    padding: 5,
+  },
+  subHeading: {
+    alignItems: "flex-end",
+    marginRight: 10,
+  },
+  createAccount: {
+    color: "#213190",
+  },
+  logo: {
+    width: 60,
+    borderRadius: 50,
+    height: 60,
+    marginTop: 20,
+    objectFit: "cover",
+  },
+});
 
+export const CustomInput = ({
+  control = {},
+  name = "",
+  validationRules = {},
+  placeholder = "",
+  label = "",
+  errors = "",
+  multiline = false,
+  keyboardType,
+  setOpenDatePicker,
+  readonly = "false",
+  updateProfileStatus,
+}) => {
+  return (
+    <>
+      <Controller
+        control={control}
+        rules={validationRules}
+        render={({ field: { onChange, onBlur, value } }) => {
+          console.log({ value });
+          return (
+            <TextInput
+              disabled={!updateProfileStatus}
+              readonly={readonly}
+              mode="outlined"
+              multiline={multiline}
+              keyboardType={keyboardType}
+              placeholder={placeholder}
+              onBlur={onBlur}
+              onChangeText={onChange}
+              value={value}
+              theme={{ colors: { primary: "#213190" } }}
+              //   label={label}
+              error={!!errors[name] && Object.keys(errors[name])?.length !== 0}
+              right={
+                name === "dob" && (
+                  <TextInput.Icon
+                    name="calendar-range"
+                    onPress={() => setOpenDatePicker(true)}
+                  />
+                )
+              }
+            />
+          );
+        }}
+        name={name}
+      />
+      <HelperText
+        type="error"
+        visible={!!errors[name] && Object.keys(errors[name])?.length !== 0}
+      >
+        {errors[name]?.message}
+      </HelperText>
+    </>
+  );
+};
 
-    },
-    headingContainer: {
-        marginTop: -100,
-        alignItems: 'center'
+const UserDetailPage = ({ navigation }) => {
+  const [date, setDate] = useState(new Date());
 
-    },
-    heading: {
-        color: '#213190',
-        fontSize: 30,
+  const [openDatePicker, setOpenDatePicker] = useState(false);
+  const [userData, setUserData] = useState();
+  const [loading, setLoading] = useState(false);
 
+  const [updateProfileStatus, setUpdateProfileStatus] = useState(false);
 
-    },
-    container: {
-        margin: 10,
-        padding: 5
-    },
-    subHeading: {
-        alignItems: 'flex-end',
-        marginRight: 10
-
-    },
-    createAccount: {
-        color: '#213190'
-
-    },
-    logo: {
-        width: 300,
-        borderRadius: 10,
-        height: 150,
-        marginBottom: 30,
-        objectFit: 'cover'
-
-
-    },
-
-})
-
-const UserDetailPage = (props, { navigation }) => {
-
-    let user_id = props?.route?.params?.user_id
-
-    if (user_id === undefined) {
-        user_id = "6599a00eb261275757e9fbd4"
-    }
-
-    // console.log(user_id)
-
-
-
-    const [showPassword, setShowPassword] = useState(false)
-    const [date, setDate] = useState(new Date())
-    const [updateDetailsDisabled, setUpdateDetailsDisabled] = useState(true)
-
-
-    const [open, setOpen] = useState(false)
-    const [userData, setUserData] = useState({
-        fullName: "",
-        address: "",
-        phone_no: "",
-        dateOfBirth: ""
-
-    })
-
-
-    useEffect(() => {
-        (async () => {
-
-            await fetch("http://192.168.0.103:5000/api/user/fetchSingelUser", {
-                method: 'POST',
-                headers: {
-                    'Content-type': 'application/json'
-                },
-                body: JSON.stringify({
-                    user_id: user_id
-                })
-
-            }).then(async (res) => {
-                const aksComitteeData = await res.json();
-                // setUserData({ userData.fullName: aksComitteeData?.fullName, userData.address: aksComitteeData?.address })
-                setUserData({ ...userData, fullName: aksComitteeData.fullName, address: aksComitteeData.address, phone_no: aksComitteeData.phone_no, dateOfBirth: aksComitteeData.dob })
-                // setUserData(aksComitteeData)
-
-            }).catch((error => {
-                console.log(error)
-
-            }))
-
-        })()
-
+  // Inside your UserDetailPage component
+  useFocusEffect(
+    React.useCallback(() => {
+      setUpdateProfileStatus(false);
+      return () => {
+        // Cleanup if necessary
+      };
     }, [])
+  );
+  const {
+    control,
+    handleSubmit,
+    formState: { errors },
+    setValue,
+    reset,
+    clearErrors,
+  } = useForm({
+    defaultValues: {
+      firstName: "",
+      lastName: "",
+      address: "",
+      phoneNumber: "",
+      ward: "",
+      dob: "",
+    },
+  });
+  useEffect(() => {
+    (async () => {
+      setLoading(true);
+      await fetch("https://aks-backend.onrender.com/api/user/fetchSingelUser", {
+        method: "POST",
+        headers: {
+          "Content-type": "application/json",
+        },
+        body: JSON.stringify({
+          user_id: "6601399e70fe730ad7c73a9f",
+        }),
+      })
+        .then(async (res) => {
+          const data = await res.json();
+          setUserData(data);
+          if (data) {
+            setValue("firstName", data.firstName || ""); // Set firstName default value
+            setValue("lastName", data.lastName || ""); // Set lastName default value
+            setValue("address", data.address || ""); // Set address default value
+            setValue("phoneNumber", data.phoneNumber || ""); // Set phoneNumber default value
+            setValue("ward", data.ward || ""); // Set ward default value
+            setValue("dob", data.dob || ""); // Set dob default value
+            setLoading(false);
+          }
+        })
+        .catch((error) => {
+          console.log(error);
+        });
+    })();
+  }, []);
 
-    console.log(userData)
+  const onSubmit = (data) => {
+    console.log(data);
+    reset();
+  };
 
+  console.log({ loading });
 
+  return (
+    <>
+      <ScrollView>
+        <SafeAreaView>
+          {loading && (
+            <ActivityIndicator
+              animating={loading}
+              size={"large"}
+              style={{ marginTop: 300 }}
+            />
+          )}
+          {!loading && (
+            <View style={styles.container}>
+              <CustomInput
+                updateProfileStatus={updateProfileStatus}
+                dValue={"hello"}
+                control={control}
+                name="firstName"
+                validationRules={{
+                  required: { value: true, message: "First name is required" },
+                }}
+                placeholder={"First Name"}
+                // label={"First Name"}
+                errors={errors}
+              />
 
+              <CustomInput
+                updateProfileStatus={updateProfileStatus}
+                control={control}
+                name="lastName"
+                validationRules={{
+                  required: { value: true, message: "Last name is required" },
+                }}
+                placeholder={"Last Name"}
+                // label={"Last Name"}
+                errors={errors}
+              />
 
+              <CustomInput
+                updateProfileStatus={updateProfileStatus}
+                control={control}
+                name="address"
+                validationRules={{
+                  required: { value: true, message: "Address is required" },
+                }}
+                placeholder={"Address"}
+                // label={"Address"}
+                errors={errors}
+                multiline={true}
+              />
 
-    // console.log(userData);
+              <CustomInput
+                updateProfileStatus={updateProfileStatus}
+                control={control}
+                name="phoneNumber"
+                validationRules={{
+                  required: {
+                    value: true,
+                    message: "Phone number is required",
+                  },
+                  maxLength: {
+                    value: 10,
+                    message: "Please enter a valid 10 digit phone number",
+                  },
+                  minLength: {
+                    value: 10,
+                    message: "Please enter a valid 10 digit phone number",
+                  },
+                  pattern: {
+                    value: /^(?:\+?91|0)?[789]\d{9}$/,
+                    message: "Invalid phone number",
+                  },
+                }}
+                placeholder={"Phone Number"}
+                // label={"Phone Number"}
+                errors={errors}
+                keyboardType="numeric"
+              />
 
+              <CustomInput
+                updateProfileStatus={updateProfileStatus}
+                control={control}
+                name="ward"
+                validationRules={{
+                  required: { value: true, message: "Ward name is required" },
+                }}
+                placeholder={"Ward"}
+                // label={"Ward"}
+                errors={errors}
+              />
 
-    return (
-        <View style={styles.box} >
-            <View style={styles.headingContainer}>
-                {/* <View style={styles.logo} > */}
-                <Image style={styles.logo} source={require('../images/aksLogo.png')} />
+              <CustomInput
+                updateProfileStatus={updateProfileStatus}
+                control={control}
+                name="dob"
+                validationRules={{
+                  required: {
+                    value: true,
+                    message: "Date of birth is required",
+                  },
+                  pattern: {
+                    value: /^\d{2}-\d{2}-\d{4}$/,
+                    message: "Date of birth should of format DD-MM-YYYY",
+                  },
+                }}
+                placeholder={"Date of birth"}
+                // label={"Date of birth"}
+                errors={errors}
+                setOpenDatePicker={setOpenDatePicker}
+                readonly={true}
+              />
 
-                {/* </View> */}
-
-                <Text style={styles.heading} >Details</Text>
+              {updateProfileStatus ? (
+                <Button
+                  loading={false}
+                  style={{ marginTop: 5, padding: 2 }}
+                  mode="contained"
+                  color="#213190"
+                  onPress={handleSubmit(onSubmit)}
+                >
+                  Submit
+                </Button>
+              ) : (
+                <Button
+                  loading={false}
+                  style={{ marginTop: 5, padding: 2 }}
+                  mode="contained"
+                  color="#213190"
+                  onPress={() => setUpdateProfileStatus(true)}
+                >
+                  Update details
+                </Button>
+              )}
             </View>
-            <View style={styles.container} >
-                <TextInput
-                    mode="outlined"
-                    label="Full Name"
-                    error={false}
-                    value={userData?.fullName}
+          )}
 
-                    onChangeText={(value) => setUserData({ ...userData, fullName: value })}
-                    name="Name"
-                    disabled={updateDetailsDisabled}
-                />
-                <TextInput
-                    mode="outlined"
-                    label="Address"
-                    value={userData?.address}
-                    error={false}
-                    multiline={true}
-                    onChangeText={(value) => setUserData({ ...userData, address: value })}
-                    disabled={updateDetailsDisabled}
+          <DatePicker
+            theme="light"
+            mode="date"
+            modal
+            open={openDatePicker}
+            date={date}
+            onConfirm={(date) => {
+              setOpenDatePicker(false);
+              setDate(date);
+              // const formattedDate = date.getDate()+"-"+date.getMonth()+"-"+date.getFullYear()
+              const extractedDate = date.toISOString().split("T")[0].split("-");
+              const customDate =
+                extractedDate[2] +
+                "-" +
+                extractedDate[1] +
+                "-" +
+                extractedDate[0];
 
+              setValue("dob", customDate);
+              clearErrors("dob");
+            }}
+            onCancel={() => {
+              setOpenDatePicker(false);
+            }}
+          />
+        </SafeAreaView>
+      </ScrollView>
+    </>
+  );
+};
 
-
-
-                />
-                <TextInput
-                    mode="outlined"
-                    label="Phone Number"
-                    keyboardType='numeric'
-                    error={false}
-                    maxLength={10}
-                    value={userData?.phone_no}
-                    disabled={updateDetailsDisabled}
-
-                // onChangeText={(value) => setUserData({ ...userData, : value })}
-
-
-
-                />
-                <TextInput
-                    mode="outlined"
-                    label="Date of Birth"
-                    error={false}
-                    right={<TextInput.Icon name="calendar-range" disabled={updateDetailsDisabled} onPress={() => setOpen(true)} />}
-                    value={userData?.dateOfBirth}
-                    disabled={updateDetailsDisabled}
-
-                // onChangeText={(value) => setDateOfBirth(value)}
-
-
-
-                />
-                <HelperText>
-                    Format: YYYY-MM-DD
-                </HelperText>
-
-
-                {/* <CustomPhoneInput /> */}
-
-                <DatePicker
-                    theme='light'
-                    mode='date'
-                    modal
-                    open={open}
-                    date={date}
-
-                    // disabled={updateDetailsDisabled}
-
-
-                    onConfirm={(date) => {
-                        setOpen(false)
-                        setDate(date)
-                        setDateOfBirth({ ...userData, dateOfBirth: date.toISOString().split('T')[0] })
-
-
-                    }}
-                    onCancel={() => {
-                        setOpen(false)
-                    }}
-
-                />
-
-
-
-                <Button loading={false} style={{ marginTop: 25, padding: 2, display: `${updateDetailsDisabled ? "" : "none"}` }} mode='contained' color='#213190' onPress={() => setUpdateDetailsDisabled(false)}  >Update Details</Button>
-                <Button loading={false} style={{ marginTop: 25, padding: 2, display: `${!updateDetailsDisabled ? "" : "none"}` }} mode='contained' color='#213190' onPress={() => console.log("submit")}  >Submit </Button>
-            </View>
-            <View style={styles.subHeading}>
-
-
-            </View>
-        </View>
-    )
-}
-
-export default UserDetailPage
+export default UserDetailPage;
