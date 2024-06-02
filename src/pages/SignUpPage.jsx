@@ -5,8 +5,10 @@ import {
   Image,
   SafeAreaView,
   ScrollView,
+  Alert,
 } from "react-native";
 import React, { useEffect, useState } from "react";
+
 import {
   Button,
   HelperText,
@@ -17,6 +19,8 @@ import DatePicker from "react-native-date-picker";
 import PhoneInput from "react-native-phone-number-input";
 import CustomPhoneInput from "../components/CustomPhoneInput";
 import { Controller, useForm } from "react-hook-form";
+
+import { SelectList } from "react-native-dropdown-select-list";
 
 const styles = StyleSheet.create({
   box: {
@@ -106,6 +110,12 @@ export const CustomInput = ({
 };
 
 const SignUpPage = ({ navigation }) => {
+  const [date, setDate] = useState(new Date());
+
+  const [isLoading, setIsLoading] = useState(false);
+
+  const [openDatePicker, setOpenDatePicker] = useState(false);
+  const [selected, setSelected] = React.useState("");
   const {
     control,
     handleSubmit,
@@ -118,18 +128,67 @@ const SignUpPage = ({ navigation }) => {
       firstName: "",
       lastName: "",
       address: "",
-      phoneNumber: "",
+      phone_no: "",
       ward: "",
     },
   });
-  const onSubmit = (data) => {
-    console.log(data);
-    reset();
+
+  const onSubmit = async (data) => {
+    setIsLoading(true);
+    const payload = { ...data, ward: selected };
+    console.log("asaaaa", payload);
+
+    // setLoadingUserData(true);
+
+    await fetch("https://aks-backend.onrender.com/api/auth/register", {
+      method: "POST",
+      headers: {
+        "Content-type": "application/json",
+      },
+      body: JSON.stringify(payload),
+    })
+      .then(async (res) => {
+        console.log("res", res);
+        const data = await res.json();
+        console.log("message:", data?.msg, "success:", data?.success);
+        setIsLoading(false);
+        // Reset the form fields
+        reset();
+
+        Alert.alert(
+          "Message",
+          data?.success ? data?.msg + ".Please Login" : data?.msg,
+          [
+            {
+              text: "Ok",
+              // onPress: () => setPhoneNumber("")
+            },
+          ]
+        );
+      })
+      .catch((error) => {
+        console.log(error);
+      });
+    // reset();
   };
 
-  const [date, setDate] = useState(new Date());
-
-  const [openDatePicker, setOpenDatePicker] = useState(false);
+  const data = [
+    { key: "1", value: "Bopal" },
+    { key: "2", value: "Bapunagar" },
+    { key: "3", value: "Ghatlodiya" },
+    { key: "4", value: "Krishnanagar" },
+    { key: "5", value: "Maninagar" },
+    { key: "6", value: "Naroda" },
+    { key: "7", value: "Nirnaynagar" },
+    { key: "8", value: "Nirnaynagar" },
+    { key: "9", value: "Noblenagar" },
+    { key: "10", value: "Odhav" },
+    { key: "11", value: "Sabarmati" },
+    { key: "12", value: "Sabarmati" },
+    { key: "13", value: "Thaltej" },
+    { key: "14", value: "Vastrapur" },
+    { key: "15", value: "Vejalpur" },
+  ];
 
   return (
     <>
@@ -178,7 +237,7 @@ const SignUpPage = ({ navigation }) => {
 
             <CustomInput
               control={control}
-              name="phoneNumber"
+              name="phone_no"
               validationRules={{
                 required: { value: true, message: "Phone number is required" },
                 maxLength: {
@@ -199,8 +258,18 @@ const SignUpPage = ({ navigation }) => {
               errors={errors}
               keyboardType="numeric"
             />
+            <SelectList
+              setSelected={(val) => {
+                setSelected(val);
+              }}
+              data={data}
+              save="value"
+              placeholder="Please select a Ward"
+              search={false}
+              boxStyles={{ marginBottom: 20, height: 50 }}
+            />
 
-            <CustomInput
+            {/* <CustomInput
               control={control}
               name="ward"
               validationRules={{
@@ -209,7 +278,7 @@ const SignUpPage = ({ navigation }) => {
               placeholder={"Ward"}
               // label={"Ward"}
               errors={errors}
-            />
+            /> */}
 
             <CustomInput
               control={control}
@@ -229,7 +298,7 @@ const SignUpPage = ({ navigation }) => {
             />
 
             <Button
-              loading={false}
+              loading={isLoading}
               style={{ marginTop: 5, padding: 2 }}
               mode="contained"
               color="#213190"

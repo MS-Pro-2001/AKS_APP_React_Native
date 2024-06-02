@@ -128,6 +128,14 @@ const LoginUsingMPin = ({ navigation }) => {
       
     </Button> */}
       </View>
+      {/* <View style={{ alignItems: "flex-end" }}>
+        <Text
+          style={{ marginRight: 60, marginTop: 20, color: "blue" }}
+          onPress={() => navigation.push("Login")}
+        >
+          Forgot Pin? Login using Phone Number
+        </Text>
+      </View> */}
     </SafeAreaView>
   );
 };

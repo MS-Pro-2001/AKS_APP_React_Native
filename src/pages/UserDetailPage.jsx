@@ -142,7 +142,7 @@ const UserDetailPage = ({ navigation }) => {
       firstName: "",
       lastName: "",
       address: "",
-      phoneNumber: "",
+      phone_no: "",
       ward: "",
       dob: "",
     },
@@ -162,11 +162,12 @@ const UserDetailPage = ({ navigation }) => {
         .then(async (res) => {
           const data = await res.json();
           setUserData(data);
+          console.log({ data });
           if (data) {
             setValue("firstName", data.firstName || ""); // Set firstName default value
             setValue("lastName", data.lastName || ""); // Set lastName default value
             setValue("address", data.address || ""); // Set address default value
-            setValue("phoneNumber", data.phoneNumber || ""); // Set phoneNumber default value
+            setValue("phone_no", data.phone_no || ""); // Set phoneNumber default value
             setValue("ward", data.ward || ""); // Set ward default value
             setValue("dob", data.dob || ""); // Set dob default value
             setLoading(false);
@@ -178,12 +179,24 @@ const UserDetailPage = ({ navigation }) => {
     })();
   }, []);
 
-  const onSubmit = (data) => {
-    console.log(data);
-    reset();
+  const onSubmit = async (data) => {
+    await fetch("https://aks-backend.onrender.com/api/user/UpdateUser", {
+      method: "POST",
+      headers: {
+        "Content-type": "application/json",
+      },
+      body: JSON.stringify({
+        user_id: "6601399e70fe730ad7c73a9f",
+      }),
+    })
+      .then(async (res) => {
+        const data = await res.json();
+        console.log({ data });
+      })
+      .catch((error) => {
+        console.log(error);
+      });
   };
-
-  console.log({ loading });
 
   return (
     <>
@@ -239,7 +252,7 @@ const UserDetailPage = ({ navigation }) => {
               <CustomInput
                 updateProfileStatus={updateProfileStatus}
                 control={control}
-                name="phoneNumber"
+                name="phone_no"
                 validationRules={{
                   required: {
                     value: true,
@@ -286,8 +299,8 @@ const UserDetailPage = ({ navigation }) => {
                     message: "Date of birth is required",
                   },
                   pattern: {
-                    value: /^\d{2}-\d{2}-\d{4}$/,
-                    message: "Date of birth should of format DD-MM-YYYY",
+                    value: /^\d{4}-\d{2}-\d{2}$/,
+                    message: "Date of birth should of format YYY-MM-DD",
                   },
                 }}
                 placeholder={"Date of birth"}

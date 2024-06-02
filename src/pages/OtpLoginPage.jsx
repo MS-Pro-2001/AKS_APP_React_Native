@@ -1,5 +1,5 @@
 import { View, Text, StyleSheet, Alert, Image } from "react-native";
-import React, { useContext, useEffect, useState } from "react";
+import React, { useCallback, useContext, useEffect, useState } from "react";
 import { Button, HelperText, TextInput } from "react-native-paper";
 import auth from "@react-native-firebase/auth";
 // import CustomDialog from '../components/CustomSnackBar'
@@ -7,6 +7,8 @@ import auth from "@react-native-firebase/auth";
 import { UserContext } from "../ContextApi/ContextApi";
 
 import { Controller, useForm } from "react-hook-form";
+import { useFocusEffect } from "@react-navigation/native";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 
 const styles = StyleSheet.create({
   container: {
@@ -137,6 +139,7 @@ const OtpLoginPage = ({ navigation }) => {
       const mobileNumber = "+91" + submittedData.phoneNumber;
       console.log("sending otp....");
       const response = await auth().signInWithPhoneNumber(mobileNumber);
+      console.log({ response });
       setUserDataFromFireBase(response);
       setIsLoading(false);
       Alert.alert(
@@ -145,7 +148,7 @@ const OtpLoginPage = ({ navigation }) => {
         [{ text: "OK", onPress: () => setIsVisibile(true) }]
       );
     } catch (error) {
-      console.log(error);
+      console.log("Error", error);
       setIsLoading(false);
 
       Alert.alert("Alert", `${error}`, [
@@ -199,6 +202,17 @@ const OtpLoginPage = ({ navigation }) => {
       ]);
     }
   };
+
+  let isPinSet;
+  const validateUser = async () => {
+    try {
+      isPinSet = await AsyncStorage.getItem("mpin");
+      console.log({ isPinSet });
+    } catch (error) {
+      console.log("error", error);
+    }
+  };
+  validateUser();
   return (
     <View style={styles.container}>
       <View style={styles.logoContainer}>
@@ -288,6 +302,19 @@ const OtpLoginPage = ({ navigation }) => {
           </View>
         </View>
       )}
+
+      {/* <View style={{ alignItems: "center" }}>
+          <Text style={{ margin: 10 }}>OR</Text>
+          <Button
+            mode="outlined"
+            color="#213190"
+            style={{ margin: 10 }}
+            onPress={() => navigation.push("Login")}
+          >
+            Login Using 4-digit Pin
+          
+          </Button>
+        </View> */}
     </View>
   );
 };
